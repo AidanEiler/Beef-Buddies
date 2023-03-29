@@ -38,8 +38,9 @@ public class MatchmakingUIController
 	@RequestMapping("matchmake")
 	public boolean Matchmake(@RequestBody User user1, @RequestBody User user2) {
 		boolean match = false;
+		int delta = 10;
 		while(!match) {
-			match = matcher.compareStats(user1, user2);
+			match = matcher.compareStats(user1, user2, delta);
 			if(!match) {
 				user2 = userRepo.findById((long)user2.getId()+1);//Need to add exception handling for when the user does not exist
 			}
@@ -64,3 +65,4 @@ public class MatchmakingUIController
         return matches;
     }
 }
+
