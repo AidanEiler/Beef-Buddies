@@ -16,7 +16,7 @@ public class Matcher {
 	 * @return A boolean value that is false when a match is not found and there are
 	 * no more users to compare and is true when a match is found
 	 */
-	public boolean compareStats(User user1, User user2) {
+	public boolean compareStats(User user1, User user2, int delta) {
 		  boolean benchMatch = false;
 		  boolean curlMatch = false;
 		  boolean squatMatch = false;
@@ -24,21 +24,21 @@ public class Matcher {
 		  if(rangeCheck < 0){
 			  rangeCheck *= -1;
 		  }
-		  if(rangeCheck <= 10) {
+		  if(rangeCheck <= delta) {
 			  benchMatch = true;
 			  rangeCheck = user1.getCurl() - user2.getCurl();
 			  if(rangeCheck < 0) {
 				  rangeCheck *= -1;
 			  }
 		  }
-		  if(rangeCheck <= 10) {
+		  if(rangeCheck <= delta) {
 			  curlMatch = true;
 			  rangeCheck = user1.getSquat() - user2.getSquat();
 			  if(rangeCheck < 0) {
 				  rangeCheck *= -1;
 			  }
 		  }
-		  if(rangeCheck <= 10) {
+		  if(rangeCheck <= delta) {
 			  squatMatch = true;
 		  }
 		  if(benchMatch && curlMatch && squatMatch) {
