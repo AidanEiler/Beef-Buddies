@@ -61,7 +61,7 @@ public class MatchmakingUIController
 	 * page to be displayed
 	 */
 	@GetMapping("/matches")
-    public List<User> getMessages() {
+    public List<User> getMatches() {
         return matches;
     }
 }
