@@ -1,111 +1,136 @@
+// src/main/java/com/example/backend/model/User.java
+package com.example.backend.model;
 
-// com/example/backend/controller/UserController.java
-package com.example.backend.controller;
-
-import com.example.backend.model.User;
-import com.example.backend.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import com.example.backend.exception.UserNotFoundException;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
+@Entity
+public class User {
+    @Id
+    @GeneratedValue
+    private Long id;
+    private String username;
+    private String first_name;
+    private String last_name;
+    private String email;
 
-@RestController
-@CrossOrigin("http://localhost:3000")
-public class UserController {
+    private String password;
 
-    @Autowired
-    private UserRepository userRepository;
+    private Long bench = 0L;
 
-    @PostMapping("/user")
-    User newUser(@RequestBody User newUser) {
-        return userRepository.save(newUser);
+    public byte[] getProfilePicture() {
+        return profilePicture;
     }
 
-    @GetMapping("/users")
-    List<User> getAllUsers() {
-        return userRepository.findAll();
-
+    public void setProfilePicture(byte[] profilePicture) {
+        this.profilePicture = profilePicture;
     }
 
-    @GetMapping("/user/{id}")
-    User getUserById(@PathVariable Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
-    }
-    @PutMapping("/user/{id}")
-    User updateUser(@RequestBody User newUser, @PathVariable Long id) {
-        return userRepository.findById(id)
-                .map(user -> {
-                    user.setUsername(newUser.getUsername());
-                    user.setFirst_name(newUser.getFirst_name());
-                    user.setLast_name(newUser.getLast_name());
-                    user.setEmail(newUser.getEmail());
-                    user.setPassword(newUser.getPassword());
-                    return userRepository.save(user);
-                }).orElseThrow(() -> new UserNotFoundException(id));
+    @Lob
+    private byte[] profilePicture; // new field for profile picture
+
+    public Long getSquat() {
+        return squat;
     }
 
-    @DeleteMapping("/user/{id}")
-    String deleteUser(@PathVariable Long id){
-        if(!userRepository.existsById(id)){
-            throw new UserNotFoundException(id);
-        }
-        userRepository.deleteById(id);
-
-        return "User with id "+id+" has been deleted";
+    public void setSquat(Long squat) {
+        this.squat = squat;
     }
-    @PostMapping("/user/authenticate")
-    public ResponseEntity<?> authenticateUser(@RequestBody User requestUser) {
-        Optional<User> user = Optional.ofNullable(userRepository.findByUsername(requestUser.getUsername()));
 
-        if (user.isPresent() && user.get().getPassword().equals(requestUser.getPassword())) {
-            return ResponseEntity.ok().body(user.get());
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
-        }
+    public Long getCurl() {
+        return curl;
     }
-    @GetMapping("/users/basic")
-    public List<Map<String, Object>> getAllUsersBasicInfo(@RequestParam("exclude") Long excludeUserId) {
-        return userRepository.findAllBasicInfoExcept(excludeUserId);
+
+    public void setCurl(Long curl) {
+        this.curl = curl;
+    }
+
+    private Long squat = 0L;
+    private Long curl = 0L;
+
+
+    public Long getBench() {
+        return bench;
+    }
+
+    public void setBench(Long bench) {
+        this.bench = bench;
     }
 
 
-    @GetMapping("/user/{id}/friends")
-    public Set<User> getUserFriends(@PathVariable Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
-        return user.getFriends();
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getFirst_name() {
+        return first_name;
+    }
+
+    public void setFirst_name(String first_name) {
+        this.first_name = first_name;
+    }
+
+    public String getLast_name() {
+        return last_name;
+    }
+
+    public void setLast_name(String last_name) {
+        this.last_name = last_name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
 
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "user_friends",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "friend_id"))
+    private Set<User> friends = new HashSet<>();
 
-    @PostMapping("/user/{userId}/addFriend/{friendId}")
-    public ResponseEntity<?> addFriend(@PathVariable Long userId, @PathVariable Long friendId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId));
-        User friend = userRepository.findById(friendId)
-                .orElseThrow(() -> new UserNotFoundException(friendId));
-
-        user.addFriend(friend);
-
-        userRepository.save(user);
-
-        return ResponseEntity.ok().body("Friend added successfully");
+    // getters and setters for friends
+    @JsonIgnore
+    public Set<User> getFriends() {
+        return friends;
     }
 
+    public void setFriends(Set<User> friends) {
+        this.friends = friends;
+    }
 
-
-
-
-
-
-
-
+    public void addFriend(User friend) {
+        friends.add(friend);
+        friend.getFriends().add(this);
+    }
 
 }
