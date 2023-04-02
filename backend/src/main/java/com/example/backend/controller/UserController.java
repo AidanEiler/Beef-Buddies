@@ -1,136 +1,187 @@
-// src/main/java/com/example/backend/model/User.java
-package com.example.backend.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
-@Entity
-public class User {
-    @Id
-    @GeneratedValue
-    private Long id;
-    private String username;
-    private String first_name;
-    private String last_name;
-    private String email;
+// com/example/backend/controller/UserController.java
+package com.example.backend.controller;
 
-    private String password;
+import com.example.backend.model.User;
+import com.example.backend.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import com.example.backend.exception.UserNotFoundException;
+import org.springframework.web.multipart.MultipartFile;
 
-    private Long bench = 0L;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
 
-    public byte[] getProfilePicture() {
-        return profilePicture;
+@RestController
+@CrossOrigin("http://localhost:3000")
+public class UserController {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @PostMapping("/user")
+    User newUser(@RequestBody User newUser) {
+
+        if (newUser.getBench() == null) {
+            newUser.setBench(0L); // Set default value if bench is null
+        }
+        return userRepository.save(newUser);
     }
 
-    public void setProfilePicture(byte[] profilePicture) {
-        this.profilePicture = profilePicture;
+    @GetMapping("/users")
+    List<User> getAllUsers() {
+        return userRepository.findAll();
+
     }
 
-    @Lob
-    private byte[] profilePicture; // new field for profile picture
-
-    public Long getSquat() {
-        return squat;
+    @GetMapping("/user/{id}")
+    User getUserById(@PathVariable Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
     }
+//    @PutMapping("/user/{id}")
+//    User updateUser(@RequestBody User newUser, @PathVariable Long id) {
+//        return userRepository.findById(id)
+//                .map(user -> {
+//                    user.setUsername(newUser.getUsername());
+//                    user.setFirst_name(newUser.getFirst_name());
+//                    user.setLast_name(newUser.getLast_name());
+//                    user.setEmail(newUser.getEmail());
+//                    user.setPassword(newUser.getPassword());
+//                    user.setBench(newUser.getBench());
+//                    user.setSquat(newUser.getSquat());
+//                    return userRepository.save(user);
+//                }).orElseThrow(() -> new UserNotFoundException(id));
+//    }
 
-    public void setSquat(Long squat) {
-        this.squat = squat;
-    }
+    @PutMapping("/user/{id}")
+    User updateUser(@RequestBody User newUser, @PathVariable Long id, @RequestParam(required = false, name = "picture") MultipartFile picture) {
+        return userRepository.findById(id)
+                .map(user -> {
+                    user.setUsername(newUser.getUsername());
+                    user.setFirst_name(newUser.getFirst_name());
+                    user.setLast_name(newUser.getLast_name());
+                    user.setEmail(newUser.getEmail());
+                    user.setPassword(newUser.getPassword());
+                    user.setBench(newUser.getBench());
+                    user.setSquat(newUser.getSquat());
 
-    public Long getCurl() {
-        return curl;
-    }
+                    if (picture != null && !picture.isEmpty()) {
+                        try {
+                            byte[] pictureBytes = picture.getBytes();
+                            user.setProfilePicture(pictureBytes);
+                        } catch (IOException e) {
+                            // handle exception
+                        }
+                    }
 
-    public void setCurl(Long curl) {
-        this.curl = curl;
-    }
-
-    private Long squat = 0L;
-    private Long curl = 0L;
-
-
-    public Long getBench() {
-        return bench;
-    }
-
-    public void setBench(Long bench) {
-        this.bench = bench;
-    }
-
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getFirst_name() {
-        return first_name;
-    }
-
-    public void setFirst_name(String first_name) {
-        this.first_name = first_name;
-    }
-
-    public String getLast_name() {
-        return last_name;
-    }
-
-    public void setLast_name(String last_name) {
-        this.last_name = last_name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
+                    return userRepository.save(user);
+                }).orElseThrow(() -> new UserNotFoundException(id));
     }
 
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(name = "user_friends",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "friend_id"))
-    private Set<User> friends = new HashSet<>();
+    @DeleteMapping("/user/{id}")
+    String deleteUser(@PathVariable Long id){
+        if(!userRepository.existsById(id)){
+            throw new UserNotFoundException(id);
+        }
+        userRepository.deleteById(id);
 
-    // getters and setters for friends
-    @JsonIgnore
-    public Set<User> getFriends() {
-        return friends;
+        return "User with id "+id+" has been deleted";
+    }
+    @PostMapping("/user/authenticate")
+    public ResponseEntity<?> authenticateUser(@RequestBody User requestUser) {
+        Optional<User> user = Optional.ofNullable(userRepository.findByUsername(requestUser.getUsername()));
+
+        if (user.isPresent() && user.get().getPassword().equals(requestUser.getPassword())) {
+            return ResponseEntity.ok().body(user.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+        }
+    }
+    @GetMapping("/users/basic")
+    public List<Map<String, Object>> getAllUsersBasicInfo(@RequestParam("exclude") Long excludeUserId) {
+        User excludeUser = userRepository.findById(excludeUserId)
+                .orElseThrow(() -> new UserNotFoundException(excludeUserId));
+
+        List<Long> friendIds = excludeUser.getFriends().stream().map(User::getId).collect(Collectors.toList());
+        friendIds.add(excludeUserId); 
+
+        return userRepository.findAllBasicInfoExcept(excludeUserId, friendIds);
     }
 
-    public void setFriends(Set<User> friends) {
-        this.friends = friends;
+
+
+    @GetMapping("/user/{id}/friends")
+    public Set<User> getUserFriends(@PathVariable Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+        return user.getFriends();
     }
 
-    public void addFriend(User friend) {
-        friends.add(friend);
-        friend.getFriends().add(this);
+
+
+    @PostMapping("/user/{userId}/addFriend/{friendId}")
+    public ResponseEntity<?> addFriend(@PathVariable Long userId, @PathVariable Long friendId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+        User friend = userRepository.findById(friendId)
+                .orElseThrow(() -> new UserNotFoundException(friendId));
+
+        user.addFriend(friend);
+
+        userRepository.save(user);
+
+        return ResponseEntity.ok().body("Friend added successfully");
     }
+
+
+
+
+    @GetMapping("/user/{id}/matches")
+    public List<User> getMatches(@PathVariable Long id) {
+        User targetUser = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+
+        double targetBench = targetUser.getBench() * 0.4; // Assign weights to each value
+        double targetSquat = targetUser.getSquat() * 0.3;
+        double targetCurl = targetUser.getCurl() * 0.3;
+
+        List<User> allUsers = userRepository.findAll();
+        allUsers.remove(targetUser); // Remove the target user from the list
+
+        // Calculate distance for each user and add to a TreeMap
+        TreeMap<Double, User> distanceMap = new TreeMap<>();
+        for (User user : allUsers) {
+            double userBench = user.getBench() * 0.4;
+            double userSquat = user.getSquat() * 0.3;
+            double userCurl = user.getCurl() * 0.3;
+            double userDistance = Math.sqrt(Math.pow(targetBench - userBench, 2) +
+                    Math.pow(targetSquat - userSquat, 2) +
+                    Math.pow(targetCurl - userCurl, 2));
+            distanceMap.put(userDistance, user);
+        }
+
+        // Get the top 10 matches
+        List<User> matches = new ArrayList<>();
+        int count = 0;
+        for (Map.Entry<Double, User> entry : distanceMap.entrySet()) {
+            if (count >= 3) {
+                break;
+            }
+            matches.add(entry.getValue());
+            count++;
+        }
+
+        return matches;
+    }
+
+
+
+
+
 
 }
