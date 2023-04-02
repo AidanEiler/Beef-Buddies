@@ -1,4 +1,3 @@
-
 // src/main/java/com/example/backend/model/User.java
 package com.example.backend.model;
 
@@ -21,6 +20,48 @@ public class User {
     private String email;
 
     private String password;
+
+    private Long bench = 0L;
+
+    public byte[] getProfilePicture() {
+        return profilePicture;
+    }
+
+    public void setProfilePicture(byte[] profilePicture) {
+        this.profilePicture = profilePicture;
+    }
+
+    @Lob
+    private byte[] profilePicture; // new field for profile picture
+
+    public Long getSquat() {
+        return squat;
+    }
+
+    public void setSquat(Long squat) {
+        this.squat = squat;
+    }
+
+    public Long getCurl() {
+        return curl;
+    }
+
+    public void setCurl(Long curl) {
+        this.curl = curl;
+    }
+
+    private Long squat = 0L;
+    private Long curl = 0L;
+
+
+    public Long getBench() {
+        return bench;
+    }
+
+    public void setBench(Long bench) {
+        this.bench = bench;
+    }
+
 
     public String getPassword() {
         return password;
