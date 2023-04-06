@@ -20,13 +20,14 @@ import org.springframework.web.servlet.ModelAndView;
 public class MatchmakingUIController
 {
 	
+	@Autowired
 	private Matcher matcher;
 	
 	
 	@Autowired
 	private UserRepository userRepo;
 	
-	private List<User> matches = new ArrayList<>();
+	List<User> matches = new ArrayList<>();
 	
 	/*
 	 * Uses the matcher to run the matching algorithm on the two users
@@ -34,25 +35,21 @@ public class MatchmakingUIController
 	 * @param user2 User that is grabbed from the database to be compared to user1
 	 * @return match Determines whether or not a match has been found
 	 */
-	@GetMapping("matchmake/default")
-	public List<User> MatchmakeDefault(@PathVariable Long id) {
-		MatchingStrategy def = new DefaultStrategy();
-		matcher = new Matcher(def);
-		return matcher.match(id);
-	}
-	
-	@GetMapping("matchmake/legs")
-	public List<User> MatchmakeLegs(@PathVariable Long id) {
-		MatchingStrategy legs = new LegsStrategy();
-		matcher = new Matcher(legs);
-		return matcher.match(id);
-	}
-	
-	@GetMapping("matchmake/arms")
-	public List<User> MatchmakeArms(@PathVariable Long id) {
-		MatchingStrategy arms = new ArmsStrategy();
-		matcher = new Matcher(arms);
-		return matcher.match(id);
+	@RequestMapping("matchmake")
+	public boolean Matchmake(@RequestBody User user1, @RequestBody User user2) {
+		boolean match = false;
+		int delta = 10;
+		while(!match) {
+			match = matcher.compareStats(user1, user2, delta);
+			if(!match) {
+				user2 = userRepo.findById((long)user2.getId()+1);//Need to add exception handling for when the user does not exist
+			}
+		}
+		if(match) {
+			userRepo.save(user2);
+			matches.add(user2);
+		}
+		return match;
 	}
 	
 	/*
@@ -68,3 +65,4 @@ public class MatchmakingUIController
         return matches;
     }
 }
+
