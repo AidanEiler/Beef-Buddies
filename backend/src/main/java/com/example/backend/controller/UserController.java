@@ -23,7 +23,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 
-
 @RestController
 @CrossOrigin("http://localhost:3000")
 
@@ -37,14 +36,7 @@ public class UserController {
 
 
     @Autowired
-    private DefaultStrategy defaultStrategy;
-
-
-    @Autowired
-    private ArmsStrategy armsStrategy;
-
-    @Autowired
-    private LegsStrategy legsStrategy;
+    private MatchingStrategy strategy;
 
     @PostMapping("/user")
     User newUser(@RequestBody User newUser) {
@@ -72,7 +64,6 @@ public class UserController {
         return userRepository.findByUsername(username);
 //               d .orElseThrow(() -> new UserNotFoundException(username));
     }
-
 
 
 //    @PutMapping("/user/{id}")
@@ -117,8 +108,6 @@ public class UserController {
     }
 
 
-
-
     // UserController.java
     @DeleteMapping("/user/{id}")
     String deleteUser(@PathVariable Long id) {
@@ -134,9 +123,6 @@ public class UserController {
     }
 
 
-
-
-
     @PostMapping("/user/authenticate")
     public ResponseEntity<?> authenticateUser(@RequestBody User requestUser) {
         Optional<User> user = Optional.ofNullable(userRepository.findByUsername(requestUser.getUsername()));
@@ -147,6 +133,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
         }
     }
+
     @GetMapping("/users/basic")
     public List<Map<String, Object>> getAllUsersBasicInfo(@RequestParam("exclude") Long excludeUserId) {
         User excludeUser = userRepository.findById(excludeUserId)
@@ -159,14 +146,12 @@ public class UserController {
     }
 
 
-
     @GetMapping("/user/{id}/friends")
     public Set<User> getUserFriends(@PathVariable Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
         return user.getFriends();
     }
-
 
 
     @PostMapping("/user/{userId}/addFriend/{friendId}")
@@ -184,21 +169,24 @@ public class UserController {
     }
 
 
-
     @GetMapping("/user/{id}/matches")
     public ResponseEntity<List<User>> getMatches(@PathVariable Long id) {
-        List<User> matches = defaultStrategy.match(id);
+        strategy = new DefaultStrategy();
+        List<User> matches = strategy.match(id);
         return ResponseEntity.ok(matches);
     }
+
     @GetMapping("/user/{id}/armsMatches")
-    public ResponseEntity<List<User>>  getArmsMatches(@PathVariable Long id){
-        List<User> matches = armsStrategy.match(id);
+    public ResponseEntity<List<User>> getArmsMatches(@PathVariable Long id) {
+        strategy = new LegsStrategy();
+        List<User> matches = strategy.match(id);
         return ResponseEntity.ok(matches);
     }
 
     @GetMapping("/user/{id}/legsMatches")
-    public ResponseEntity<List<User>>  getLegMatches(@PathVariable Long id){
-        List<User> matches = legsStrategy.match(id);
+    public ResponseEntity<List<User>> getLegMatches(@PathVariable Long id) {
+        strategy = new ArmsStrategy();
+        List<User> matches = strategy.match(id);
         return ResponseEntity.ok(matches);
     }
 
@@ -248,10 +236,6 @@ public class UserController {
 //
 //        return matches;
 //    }
-
-
-
-
 
 
 }
