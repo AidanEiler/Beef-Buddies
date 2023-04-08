@@ -22,6 +22,8 @@ public class User {
     private String password;
 
     private Long bench = 0L;
+    private Long squat = 0L;
+    private Long curl = 0L;
 
     public byte[] getProfilePicture() {
         return profilePicture;
@@ -49,9 +51,6 @@ public class User {
     public void setCurl(Long curl) {
         this.curl = curl;
     }
-
-    private Long squat = 0L;
-    private Long curl = 0L;
 
 
     public Long getBench() {
@@ -112,7 +111,7 @@ public class User {
     }
 
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
     @JoinTable(name = "user_friends",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "friend_id"))
@@ -132,5 +131,6 @@ public class User {
         friends.add(friend);
         friend.getFriends().add(this);
     }
+
 
 }

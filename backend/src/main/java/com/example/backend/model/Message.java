@@ -1,3 +1,4 @@
+
 package com.example.backend.model;
 
 import jakarta.persistence.*;
@@ -10,11 +11,11 @@ public class Message {
     @GeneratedValue
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "sender_id", nullable = false)
     private User sender;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "receiver_id", nullable = false)
     private User receiver;
 

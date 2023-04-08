@@ -1,5 +1,4 @@
 
-
 package com.example.backend.repository;
 
 import com.example.backend.model.User;
@@ -16,7 +15,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "WHERE u.id != :excludeUserId " +
             "AND u.id NOT IN :friendIds")
     List<Map<String, Object>> findAllBasicInfoExcept(Long excludeUserId, List<Long> friendIds);
+
+    @Query(value = "DELETE FROM user_friends WHERE user_id = :userId", nativeQuery = true)
+   void deleteFriendsByUserId(Long userId);
 }
-
-
-
