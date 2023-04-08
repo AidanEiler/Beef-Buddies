@@ -2,12 +2,19 @@
 // com/example/backend/controller/UserController.java
 package com.example.backend.controller;
 
+import com.example.backend.MatchingStrategy;
 import com.example.backend.model.User;
+import com.example.backend.repository.MessageRepository;
+
 import com.example.backend.repository.UserRepository;
+import com.example.backend.strategy.ArmsStrategy;
+import com.example.backend.strategy.DefaultStrategy;
+import com.example.backend.strategy.LegsStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.example.backend.exception.UserNotFoundException;
 import com.example.backend.exception.UserNotFoundException;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,12 +22,29 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
+
 @RestController
 @CrossOrigin("http://localhost:3000")
+
 public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private MessageRepository messageRepository;
+
+
+    @Autowired
+    private DefaultStrategy defaultStrategy;
+
+
+    @Autowired
+    private ArmsStrategy armsStrategy;
+
+    @Autowired
+    private LegsStrategy legsStrategy;
 
     @PostMapping("/user")
     User newUser(@RequestBody User newUser) {
@@ -42,6 +66,15 @@ public class UserController {
         return userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
     }
+
+    @GetMapping("/user")
+    User getUserByUsername(@RequestParam String username) {
+        return userRepository.findByUsername(username);
+//               d .orElseThrow(() -> new UserNotFoundException(username));
+    }
+
+
+
 //    @PutMapping("/user/{id}")
 //    User updateUser(@RequestBody User newUser, @PathVariable Long id) {
 //        return userRepository.findById(id)
@@ -68,6 +101,7 @@ public class UserController {
                     user.setPassword(newUser.getPassword());
                     user.setBench(newUser.getBench());
                     user.setSquat(newUser.getSquat());
+                    user.setCurl(newUser.getCurl());
 
                     if (picture != null && !picture.isEmpty()) {
                         try {
@@ -83,15 +117,26 @@ public class UserController {
     }
 
 
+
+
+    // UserController.java
     @DeleteMapping("/user/{id}")
-    String deleteUser(@PathVariable Long id){
-        if(!userRepository.existsById(id)){
+    String deleteUser(@PathVariable Long id) {
+        if (!userRepository.existsById(id)) {
             throw new UserNotFoundException(id);
         }
+
+        User user = userRepository.getById(id);
+
         userRepository.deleteById(id);
 
-        return "User with id "+id+" has been deleted";
+        return "User with id " + id + " has been deleted";
     }
+
+
+
+
+
     @PostMapping("/user/authenticate")
     public ResponseEntity<?> authenticateUser(@RequestBody User requestUser) {
         Optional<User> user = Optional.ofNullable(userRepository.findByUsername(requestUser.getUsername()));
@@ -108,7 +153,7 @@ public class UserController {
                 .orElseThrow(() -> new UserNotFoundException(excludeUserId));
 
         List<Long> friendIds = excludeUser.getFriends().stream().map(User::getId).collect(Collectors.toList());
-        friendIds.add(excludeUserId); 
+        friendIds.add(excludeUserId); // Add the exclude user ID to the list
 
         return userRepository.findAllBasicInfoExcept(excludeUserId, friendIds);
     }
@@ -140,44 +185,69 @@ public class UserController {
 
 
 
-
     @GetMapping("/user/{id}/matches")
-    public List<User> getMatches(@PathVariable Long id) {
-        User targetUser = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
-
-        double targetBench = targetUser.getBench() * 0.4; // Assign weights to each value
-        double targetSquat = targetUser.getSquat() * 0.3;
-        double targetCurl = targetUser.getCurl() * 0.3;
-
-        List<User> allUsers = userRepository.findAll();
-        allUsers.remove(targetUser); // Remove the target user from the list
-
-        // Calculate distance for each user and add to a TreeMap
-        TreeMap<Double, User> distanceMap = new TreeMap<>();
-        for (User user : allUsers) {
-            double userBench = user.getBench() * 0.4;
-            double userSquat = user.getSquat() * 0.3;
-            double userCurl = user.getCurl() * 0.3;
-            double userDistance = Math.sqrt(Math.pow(targetBench - userBench, 2) +
-                    Math.pow(targetSquat - userSquat, 2) +
-                    Math.pow(targetCurl - userCurl, 2));
-            distanceMap.put(userDistance, user);
-        }
-
-        // Get the top 10 matches
-        List<User> matches = new ArrayList<>();
-        int count = 0;
-        for (Map.Entry<Double, User> entry : distanceMap.entrySet()) {
-            if (count >= 3) {
-                break;
-            }
-            matches.add(entry.getValue());
-            count++;
-        }
-
-        return matches;
+    public ResponseEntity<List<User>> getMatches(@PathVariable Long id) {
+        List<User> matches = defaultStrategy.match(id);
+        return ResponseEntity.ok(matches);
     }
+    @GetMapping("/user/{id}/armsMatches")
+    public ResponseEntity<List<User>>  getArmsMatches(@PathVariable Long id){
+        List<User> matches = armsStrategy.match(id);
+        return ResponseEntity.ok(matches);
+    }
+
+    @GetMapping("/user/{id}/legsMatches")
+    public ResponseEntity<List<User>>  getLegMatches(@PathVariable Long id){
+        List<User> matches = legsStrategy.match(id);
+        return ResponseEntity.ok(matches);
+    }
+
+
+//    @GetMapping("matchmake/default")
+//    public List<User> MatchmakeDefault(@PathVariable Long id) {
+//        MatchingStrategy def = new DefaultStrategy();
+//        matcher = new Matcher(def);
+//        return matcher.match(id);
+//    }
+
+
+//    @GetMapping("/user/{id}/matches")
+//    public List<User> getMatches(@PathVariable Long id) {
+//        User targetUser = userRepository.findById(id)
+//                .orElseThrow(() -> new UserNotFoundException(id));
+//
+//        double targetBench = targetUser.getBench() * 0.4; // Assign weights to each value
+//        double targetSquat = targetUser.getSquat() * 0.3;
+//        double targetCurl = targetUser.getCurl() * 0.3;
+//
+//        List<User> allUsers = userRepository.findAll();
+//        allUsers.remove(targetUser); // Remove the target user from the list
+//
+//        // Calculate distance for each user and add to a TreeMap
+//        TreeMap<Double, User> distanceMap = new TreeMap<>();
+//        for (User user : allUsers) {
+//            double userBench = user.getBench() * 0.4;
+//            double userSquat = user.getSquat() * 0.3;
+//            double userCurl = user.getCurl() * 0.3;
+//            double userDistance = Math.sqrt(Math.pow(targetBench - userBench, 2) +
+//                    Math.pow(targetSquat - userSquat, 2) +
+//                    Math.pow(targetCurl - userCurl, 2));
+//            distanceMap.put(userDistance, user);
+//        }
+//
+//        // Get the top 10 matches
+//        List<User> matches = new ArrayList<>();
+//        int count = 0;
+//        for (Map.Entry<Double, User> entry : distanceMap.entrySet()) {
+//            if (count >= 3) {
+//                break;
+//            }
+//            matches.add(entry.getValue());
+//            count++;
+//        }
+//
+//        return matches;
+//    }
 
 
 
