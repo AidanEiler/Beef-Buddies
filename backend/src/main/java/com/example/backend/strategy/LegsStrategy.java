@@ -35,9 +35,9 @@ public class LegsStrategy implements MatchingStrategy{
         // Calculate distance for each user and add to a TreeMap
         TreeMap<Double, User> distanceMap = new TreeMap<>();
         for (User user : allUsers) {
-            double userBench = user.getBench() * 0.4;
-            double userSquat = user.getSquat() * 0.3;
-            double userCurl = user.getCurl() * 0.3;
+            double userBench = user.getBench() * 0.1;
+            double userSquat = user.getSquat() * 0.8;
+            double userCurl = user.getCurl() * 0.1;
             double userDistance = Math.sqrt(Math.pow(targetBench - userBench, 2) +
                     Math.pow(targetSquat - userSquat, 2) +
                     Math.pow(targetCurl - userCurl, 2));
@@ -48,7 +48,7 @@ public class LegsStrategy implements MatchingStrategy{
         List<User> matches = new ArrayList<>();
         int count = 0;
         for (Map.Entry<Double, User> entry : distanceMap.entrySet()) {
-            if (count >= 10) {
+            if (count >= 3) {
                 break;
             }
             matches.add(entry.getValue());

@@ -1,31 +1,27 @@
-
 // com/example/backend/controller/UserController.java
 package com.example.backend.controller;
 
 import com.example.backend.MatchingStrategy;
 import com.example.backend.model.User;
 import com.example.backend.repository.MessageRepository;
-
 import com.example.backend.repository.UserRepository;
 import com.example.backend.strategy.ArmsStrategy;
 import com.example.backend.strategy.DefaultStrategy;
 import com.example.backend.strategy.LegsStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.example.backend.exception.UserNotFoundException;
 import com.example.backend.exception.UserNotFoundException;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 @RestController
 @CrossOrigin("http://localhost:3000")
-
 public class UserController {
 
     @Autowired
@@ -34,9 +30,18 @@ public class UserController {
     @Autowired
     private MessageRepository messageRepository;
 
-
     @Autowired
     private MatchingStrategy strategy;
+/*
+    @Autowired
+    private ArmsStrategy armsStrategy;
+
+    @Autowired
+    private LegsStrategy legsStrategy;
+
+    @Autowired
+    private DefaultStrategy defaultStrategy;
+ */
 
     @PostMapping("/user")
     User newUser(@RequestBody User newUser) {
@@ -64,6 +69,7 @@ public class UserController {
         return userRepository.findByUsername(username);
 //               d .orElseThrow(() -> new UserNotFoundException(username));
     }
+
 
 
 //    @PutMapping("/user/{id}")
@@ -108,6 +114,8 @@ public class UserController {
     }
 
 
+
+
     // UserController.java
     @DeleteMapping("/user/{id}")
     String deleteUser(@PathVariable Long id) {
@@ -123,6 +131,9 @@ public class UserController {
     }
 
 
+
+
+
     @PostMapping("/user/authenticate")
     public ResponseEntity<?> authenticateUser(@RequestBody User requestUser) {
         Optional<User> user = Optional.ofNullable(userRepository.findByUsername(requestUser.getUsername()));
@@ -133,7 +144,6 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
         }
     }
-
     @GetMapping("/users/basic")
     public List<Map<String, Object>> getAllUsersBasicInfo(@RequestParam("exclude") Long excludeUserId) {
         User excludeUser = userRepository.findById(excludeUserId)
@@ -146,12 +156,14 @@ public class UserController {
     }
 
 
+
     @GetMapping("/user/{id}/friends")
     public Set<User> getUserFriends(@PathVariable Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
         return user.getFriends();
     }
+
 
 
     @PostMapping("/user/{userId}/addFriend/{friendId}")
@@ -171,21 +183,17 @@ public class UserController {
 
     @GetMapping("/user/{id}/matches")
     public ResponseEntity<List<User>> getMatches(@PathVariable Long id) {
-        strategy = new DefaultStrategy();
         List<User> matches = strategy.match(id);
         return ResponseEntity.ok(matches);
     }
-
     @GetMapping("/user/{id}/armsMatches")
-    public ResponseEntity<List<User>> getArmsMatches(@PathVariable Long id) {
-        strategy = new LegsStrategy();
+    public ResponseEntity<List<User>>  getArmsMatches(@PathVariable Long id){
         List<User> matches = strategy.match(id);
         return ResponseEntity.ok(matches);
     }
 
     @GetMapping("/user/{id}/legsMatches")
-    public ResponseEntity<List<User>> getLegMatches(@PathVariable Long id) {
-        strategy = new ArmsStrategy();
+    public ResponseEntity<List<User>>  getLegMatches(@PathVariable Long id){
         List<User> matches = strategy.match(id);
         return ResponseEntity.ok(matches);
     }
@@ -236,6 +244,10 @@ public class UserController {
 //
 //        return matches;
 //    }
+
+
+
+
 
 
 }
