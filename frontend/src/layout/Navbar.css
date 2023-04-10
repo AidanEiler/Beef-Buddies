@@ -1,0 +1,10 @@
+/* Navbar.css */
+.custom-navbar {
+    height: 100%; /* Adjust the height of the navbar */
+    width: 100%; /* Adjust the width of the navbar */
+    background-size:  100% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: #7A2300
+  }
+  
