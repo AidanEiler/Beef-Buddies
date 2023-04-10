@@ -1,6 +1,6 @@
+
+//src/main/java/com/example/backend/strategy/LegsStrategy.java
 package com.example.backend.strategy;
-
-
 import java.util.List;
 import java.util.TreeMap;
 
@@ -48,7 +48,7 @@ public class LegsStrategy implements MatchingStrategy{
         List<User> matches = new ArrayList<>();
         int count = 0;
         for (Map.Entry<Double, User> entry : distanceMap.entrySet()) {
-            if (count >= 3) {
+            if (count >= 10) {
                 break;
             }
             matches.add(entry.getValue());

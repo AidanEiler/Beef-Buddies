@@ -1,3 +1,4 @@
+//src/main/java/com/example/backend/strategy/ArmsStrategy.java
 package com.example.backend.strategy;
 
 
@@ -25,9 +26,9 @@ public class ArmsStrategy implements MatchingStrategy {
         User targetUser = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
-        double targetBench = targetUser.getBench() * 0.1; // Assign weights to each value
-        double targetSquat = targetUser.getSquat() * 0.1;
-        double targetCurl = targetUser.getCurl() * 0.3;
+        double targetBench = targetUser.getBench() * 0.4; // Assign weights to each value
+        double targetSquat = targetUser.getSquat() * 0.2;
+        double targetCurl = targetUser.getCurl() * 0.5;
 
         List<User> allUsers = (List<User>) userRepository.findAll();
         allUsers.remove(targetUser); // Remove the target user from the list
@@ -35,9 +36,9 @@ public class ArmsStrategy implements MatchingStrategy {
         // Calculate distance for each user and add to a TreeMap
         TreeMap<Double, User> distanceMap = new TreeMap<>();
         for (User user : allUsers) {
-            double userBench = user.getBench() * 0.1;
-            double userSquat = user.getSquat() * 0.1;
-            double userCurl = user.getCurl() * 0.3;
+            double userBench = user.getBench() * 0.4;
+            double userSquat = user.getSquat() * 0.2;
+            double userCurl = user.getCurl() * 0.5;
             double userDistance = Math.sqrt(Math.pow(targetBench - userBench, 2) +
                     Math.pow(targetSquat - userSquat, 2) +
                     Math.pow(targetCurl - userCurl, 2));
@@ -48,7 +49,7 @@ public class ArmsStrategy implements MatchingStrategy {
         List<User> matches = new ArrayList<>();
         int count = 0;
         for (Map.Entry<Double, User> entry : distanceMap.entrySet()) {
-            if (count >= 3) {
+            if (count >= 10) {
                 break;
             }
             matches.add(entry.getValue());
@@ -59,3 +60,5 @@ public class ArmsStrategy implements MatchingStrategy {
     }
 
 }
+
+

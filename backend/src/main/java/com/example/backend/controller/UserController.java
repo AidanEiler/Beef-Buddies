@@ -1,7 +1,8 @@
+
 // com/example/backend/controller/UserController.java
 package com.example.backend.controller;
-
 import com.example.backend.MatchingStrategy;
+import com.example.backend.MatchingType;
 import com.example.backend.model.User;
 import com.example.backend.repository.MessageRepository;
 import com.example.backend.repository.UserRepository;
@@ -9,19 +10,18 @@ import com.example.backend.strategy.ArmsStrategy;
 import com.example.backend.strategy.DefaultStrategy;
 import com.example.backend.strategy.LegsStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.example.backend.exception.UserNotFoundException;
-import com.example.backend.exception.UserNotFoundException;
-import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
+
 @RestController
 @CrossOrigin("http://localhost:3000")
+
 public class UserController {
 
     @Autowired
@@ -30,18 +30,13 @@ public class UserController {
     @Autowired
     private MessageRepository messageRepository;
 
-    @Autowired
-    private MatchingStrategy strategy;
-/*
-    @Autowired
-    private ArmsStrategy armsStrategy;
 
     @Autowired
-    private LegsStrategy legsStrategy;
+    private Map<MatchingType, MatchingStrategy> matchingStrategies;
 
-    @Autowired
-    private DefaultStrategy defaultStrategy;
- */
+
+
+
 
     @PostMapping("/user")
     User newUser(@RequestBody User newUser) {
@@ -72,23 +67,8 @@ public class UserController {
 
 
 
-//    @PutMapping("/user/{id}")
-//    User updateUser(@RequestBody User newUser, @PathVariable Long id) {
-//        return userRepository.findById(id)
-//                .map(user -> {
-//                    user.setUsername(newUser.getUsername());
-//                    user.setFirst_name(newUser.getFirst_name());
-//                    user.setLast_name(newUser.getLast_name());
-//                    user.setEmail(newUser.getEmail());
-//                    user.setPassword(newUser.getPassword());
-//                    user.setBench(newUser.getBench());
-//                    user.setSquat(newUser.getSquat());
-//                    return userRepository.save(user);
-//                }).orElseThrow(() -> new UserNotFoundException(id));
-//    }
-
     @PutMapping("/user/{id}")
-    User updateUser(@RequestBody User newUser, @PathVariable Long id, @RequestParam(required = false, name = "picture") MultipartFile picture) {
+    User updateUser(@RequestBody User newUser, @PathVariable Long id) {
         return userRepository.findById(id)
                 .map(user -> {
                     user.setUsername(newUser.getUsername());
@@ -100,38 +80,37 @@ public class UserController {
                     user.setSquat(newUser.getSquat());
                     user.setCurl(newUser.getCurl());
 
-                    if (picture != null && !picture.isEmpty()) {
-                        try {
-                            byte[] pictureBytes = picture.getBytes();
-                            user.setProfilePicture(pictureBytes);
-                        } catch (IOException e) {
-                            // handle exception
-                        }
-                    }
-
                     return userRepository.save(user);
+
                 }).orElseThrow(() -> new UserNotFoundException(id));
     }
 
-
-
-
-    // UserController.java
-    @DeleteMapping("/user/{id}")
-    String deleteUser(@PathVariable Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new UserNotFoundException(id);
-        }
-
-        User user = userRepository.getById(id);
-
-        userRepository.deleteById(id);
-
-        return "User with id " + id + " has been deleted";
-    }
-
-
-
+//    @PutMapping("/user/{id}")
+//    User updateUser(@PathVariable Long id,
+//                    @RequestPart("user") User newUser,
+//                    @RequestPart(value = "picture", required = false) MultipartFile picture) {
+//        return userRepository.findById(id)
+//                .map(user -> {
+//                    user.setUsername(newUser.getUsername());
+//                    user.setFirst_name(newUser.getFirst_name());
+//                    user.setLast_name(newUser.getLast_name());
+//                    user.setEmail(newUser.getEmail());
+//                    user.setPassword(newUser.getPassword());
+//                    user.setBench(newUser.getBench());
+//                    user.setSquat(newUser.getSquat());
+//                    user.setCurl(newUser.getCurl());
+//
+//                    if (picture != null) {
+//                        try {
+//                            user.setProfilePicture(picture.getBytes());
+//                        } catch (IOException e) {
+//                            throw new RuntimeException("Error occurred while uploading profile picture.");
+//                        }
+//                    }
+//
+//                    return userRepository.save(user);
+//                }).orElseThrow(() -> new UserNotFoundException(id));
+//    }
 
 
     @PostMapping("/user/authenticate")
@@ -180,23 +159,37 @@ public class UserController {
         return ResponseEntity.ok().body("Friend added successfully");
     }
 
+    private MatchingStrategy getMatchingStrategy(MatchingType type) {
+        return matchingStrategies.get(type);
+    }
 
     @GetMapping("/user/{id}/matches")
-    public ResponseEntity<List<User>> getMatches(@PathVariable Long id) {
-        List<User> matches = strategy.match(id);
-        return ResponseEntity.ok(matches);
-    }
-    @GetMapping("/user/{id}/armsMatches")
-    public ResponseEntity<List<User>>  getArmsMatches(@PathVariable Long id){
-        List<User> matches = strategy.match(id);
+    public ResponseEntity<List<User>> getMatches(@PathVariable Long id,
+                                                 @RequestParam(name = "type", defaultValue = "DEFAULT") MatchingType type) {
+        List<User> matches = getMatchingStrategy(type).match(id);
         return ResponseEntity.ok(matches);
     }
 
-    @GetMapping("/user/{id}/legsMatches")
-    public ResponseEntity<List<User>>  getLegMatches(@PathVariable Long id){
-        List<User> matches = strategy.match(id);
-        return ResponseEntity.ok(matches);
-    }
+
+
+
+//
+//    @GetMapping("/user/{id}/matches")
+//    public ResponseEntity<List<User>> getMatches(@PathVariable Long id) {
+//        List<User> matches = defaultStrategy.match(id);
+//        return ResponseEntity.ok(matches);
+//    }
+//    @GetMapping("/user/{id}/armsMatches")
+//    public ResponseEntity<List<User>>  getArmsMatches(@PathVariable Long id){
+//        List<User> matches = armsStrategy.match(id);
+//        return ResponseEntity.ok(matches);
+//    }
+//
+//    @GetMapping("/user/{id}/legsMatches")
+//    public ResponseEntity<List<User>>  getLegMatches(@PathVariable Long id){
+//        List<User> matches = legsStrategy.match(id);
+//        return ResponseEntity.ok(matches);
+//    }
 
 
 //    @GetMapping("matchmake/default")
