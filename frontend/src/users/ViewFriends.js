@@ -3,6 +3,9 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import './ViewFriends.css';
 
+/**
+ *This component displays the list of friends of the user and allows the user to navigate to message a friend or view the schedule.
+ */
 export default function ViewFriends() {
   const [friends, getFriends] = useState([]);
   const { id } = useParams();
@@ -23,6 +26,10 @@ export default function ViewFriends() {
     navigate(`/messageFriend/${id}/${friendId}`);
   };
 
+  const goToSchedule = () => {
+    navigate(`/schedule/${id}`);
+  };
+
   return (
     <div className="container">
       <h2 className="text-center m-4">My Buddies</h2>
@@ -38,6 +45,12 @@ export default function ViewFriends() {
                 onClick={() => goToMessageFriend(friend.id)}
               >
                 Message Buddy
+              </button>
+              <button
+                className="btn btn-primary my-2 mx-2"
+                onClick={() => goToSchedule()}
+              >
+                Schedule
               </button>
             </div>
           ))

@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useParams } from "react-router-dom";
+/**
+ * Displays a list of users and a "Message" button for each user.
+ * When the "Message" button is clicked, it navigates to the "View Messages" page for that user.
+ */
 export default function Messages() {
     const [users, setUsers] = useState([]);
 

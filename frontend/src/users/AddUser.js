@@ -2,6 +2,13 @@ import axios from "axios";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+/**
+
+This component renders a sign-up form for users to create a new account. The form includes input fields for the user's first name, last name, username, email, and password. When the user submits the form, an HTTP POST request is sent to the server with the user's information to create a new user. If the request is successful, the user is navigated to the home page. If the user cancels the form, they are navigated back to the home page.
+*/
+
+
+
 export default function AddUser() {
   let navigate = useNavigate();
 

@@ -1,7 +1,13 @@
 import React from 'react';
 import './Landing.css';
-import { useNavigate } from 'react-router-dom'; // import the useNavigate hook
+import { useNavigate } from 'react-router-dom'; 
 
+/**
+
+ * This component renders the landing page of the BeefBuddies app.
+ * It displays a brief description of the app and two CTA buttons, "Learn More" and "Get Started".
+ * The "Get Started" button redirects the user to the login page using the useNavigate hook from react-router-dom.
+ */
 function MainContent() {
   const navigate = useNavigate(); // initialize the useNavigate hook
 

@@ -3,6 +3,9 @@ import React from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
+/**
+ * The ViewUser component displays a profile information and handles the requests to other links for finding friends and viewing friends.
+ */
 export default function ViewUser() {
   const [user, setUser] = useState({
     first_name: "",
@@ -11,6 +14,8 @@ export default function ViewUser() {
     email: "",
     password: "",
   });
+  
+
   const { id } = useParams();
   useEffect(() => {
     loadUser();
@@ -38,7 +43,6 @@ export default function ViewUser() {
 
           <div className="card">
             <div className="card-header">
-              Details of user id :
               <ul className="list-group list-group-flush">
                 <li className="list-group-item">
                   <b>First Name:</b>
@@ -56,10 +60,7 @@ export default function ViewUser() {
                   <b>Email:</b>
                   {user.email}
                 </li>
-                <li className="list-group-item">
-                  <b>Password:</b>
-                  {user.password}
-                </li>
+               
               </ul>
             </div>
           </div>

@@ -4,6 +4,10 @@ import React, { useEffect } from "react";
 import axios from "axios";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+
+/**
+ * The EditUser component displays a profile information and handles the user's edit request.
+ */
 export default function EditUser() {
 
     let navigate=useNavigate();
