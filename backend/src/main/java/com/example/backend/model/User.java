@@ -1,4 +1,16 @@
-// backend/src/main/java/com/example/backend/model/User.java
+//backend/src/main/java/com/example/backend/model/User.java
+/**
+
+ This package contains the User class, which represents a user in the application.
+ The class defines properties for the user's ID, username, first name, last name, email, password, and fitness stats (bench, squat, and curl).
+ It also contains a Set of User entities representing the user's friends, as well as a byte array for the user's profile picture.
+ The class is annotated with the Entity annotation to indicate that it is a persistent entity in the database.
+ It also defines a ManyToMany relationship with itself using the friends Set and the user_friends join table.
+ Additionally, the class defines a new field for the user's distance, which is used for user matching based two users' stats proximity.
+ @author jomo
+ */
+
+
 package com.example.backend.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -130,6 +142,16 @@ public class User {
     public void addFriend(User friend) {
         friends.add(friend);
         friend.getFriends().add(this);
+    }
+
+    private Double distance; // Add a new field for the distance
+
+    public void setDistance(Double distance) {
+        this.distance = distance;
+    }
+
+    public Double getDistance() {
+        return distance;
     }
 
 

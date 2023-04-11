@@ -1,5 +1,9 @@
 
 //src/main/java/com/example/backend/strategy/LegsStrategy.java
+/**
+ * Matching strategy that matches users based on their leg exercises (squats).
+ * Assigns weights to each value and calculates distance between users based on those weights.
+ */
 package com.example.backend.strategy;
 import java.util.List;
 import java.util.TreeMap;
@@ -20,6 +24,13 @@ public class LegsStrategy implements MatchingStrategy{
     @Autowired
     UserRepository userRepository;
 
+    /**
+     * Matches a user with other users based on their leg exercises (curls).
+     *
+     * @param id the ID of the user to match with others
+     * @return a list of matched users, sorted by distance (closest to farthest)
+     * @throws UserNotFoundException if the user with the given ID is not found in the database
+     */
     @Override
     public List<User> match(Long id) {
         User targetUser = userRepository.findById(id)
@@ -51,11 +62,15 @@ public class LegsStrategy implements MatchingStrategy{
             if (count >= 10) {
                 break;
             }
-            matches.add(entry.getValue());
+            double distance = entry.getKey();
+            User user = entry.getValue();
+            matches.add(user);
+            user.setDistance(distance); // Set the distance on the user object
             count++;
         }
 
         return matches;
     }
+
 
 }

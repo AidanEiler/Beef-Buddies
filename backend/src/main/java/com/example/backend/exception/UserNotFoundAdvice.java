@@ -10,7 +10,13 @@ import java.util.Map;
 import java.util.HashMap;
 @ControllerAdvice
 public class UserNotFoundAdvice {
-
+    /**
+     * Exception handler method for UserNotFoundExceptions.
+     * Returns a JSON error message with a 404 status code.
+     *
+     * @param exception the UserNotFoundException to handle
+     * @return a HashMap with an "errorMessage" key and the exception message as its value
+     */
     @ResponseBody
     @ExceptionHandler(UserNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)

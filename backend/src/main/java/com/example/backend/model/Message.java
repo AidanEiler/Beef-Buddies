@@ -1,4 +1,12 @@
+/**
 
+ This package contains the Message class, which represents a message sent between users in the application.
+ The class defines properties for the message's ID, sender, receiver, content, and timestamp.
+ The class is annotated with the Entity annotation to indicate that it is a persistent entity in the database.
+ It defines ManyToOne relationships with the sender and receiver users, with the sender_id and receiver_id foreign keys stored in the message table.
+ The class also defines constructors for creating new messages, as well as getters and setters for its properties.
+ @author jomo
+ */
 package com.example.backend.model;
 
 import jakarta.persistence.*;

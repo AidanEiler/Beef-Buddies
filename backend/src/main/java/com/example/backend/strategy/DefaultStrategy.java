@@ -1,11 +1,12 @@
 
 // backend/src/main/java/com/example/backend/strategy/DefaultStrategy.java
+/**
+ * Matching strategy that matches users based on all exercises (squat, curl, bench).
+ * Assigns weights to each value and calculates distance between users based on those weights.
+ */
 package com.example.backend.strategy;
-
-
 import java.util.List;
 import java.util.TreeMap;
-
 import com.example.backend.MatchingStrategy;
 import com.example.backend.exception.UserNotFoundException;
 import com.example.backend.model.User;
@@ -21,14 +22,20 @@ public class DefaultStrategy implements MatchingStrategy {
 
     @Autowired
     UserRepository userRepository;
-
+    /**
+     * Matches a user with other users based on all exercises (bench,squat,curl).
+     *
+     * @param id the ID of the user to match with others
+     * @return a list of matched users, sorted by distance (closest to farthest)
+     * @throws UserNotFoundException if the user with the given ID is not found in the database
+     */
     @Override
     public List<User> match(Long id) {
         User targetUser = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
-        double targetBench = targetUser.getBench() * 0.4; // Assign weights to each value
-        double targetSquat = targetUser.getSquat() * 0.3;
+        double targetBench = targetUser.getBench() * 0.3; // Assign weights to each value
+        double targetSquat = targetUser.getSquat() * 0.4;
         double targetCurl = targetUser.getCurl() * 0.3;
 
         List<User> allUsers = (List<User>) userRepository.findAll();
@@ -37,8 +44,8 @@ public class DefaultStrategy implements MatchingStrategy {
         // Calculate distance for each user and add to a TreeMap
         TreeMap<Double, User> distanceMap = new TreeMap<>();
         for (User user : allUsers) {
-            double userBench = user.getBench() * 0.4;
-            double userSquat = user.getSquat() * 0.3;
+            double userBench = user.getBench() * 0.3;
+            double userSquat = user.getSquat() * 0.4;
             double userCurl = user.getCurl() * 0.3;
             double userDistance = Math.sqrt(Math.pow(targetBench - userBench, 2) +
                     Math.pow(targetSquat - userSquat, 2) +
@@ -50,10 +57,13 @@ public class DefaultStrategy implements MatchingStrategy {
         List<User> matches = new ArrayList<>();
         int count = 0;
         for (Map.Entry<Double, User> entry : distanceMap.entrySet()) {
-            if (count >= 3) {
+            if (count >= 10) {
                 break;
             }
-            matches.add(entry.getValue());
+            double distance = entry.getKey();
+            User user = entry.getValue();
+            matches.add(user);
+            user.setDistance(distance); // Set the distance on the user object
             count++;
         }
 
