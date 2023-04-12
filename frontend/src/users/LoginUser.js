@@ -1,8 +1,15 @@
+
+
+
+// frontend/src/users/LoginUser.js
 import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom"; // import the Link component
 import axios from "axios";
 import { AuthContext } from "../AuthContext";
 
+/**
+ *This component handles user account authentication and routes the logged in user to their profile page
+ */
 export default function LoginUser() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");

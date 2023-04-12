@@ -26,9 +26,7 @@ export default function ViewFriends() {
     navigate(`/messageFriend/${id}/${friendId}`);
   };
 
-  const goToSchedule = () => {
-    navigate(`/schedule/${id}`);
-  };
+ 
 
   return (
     <div className="container">
@@ -46,12 +44,7 @@ export default function ViewFriends() {
               >
                 Message Buddy
               </button>
-              <button
-                className="btn btn-primary my-2 mx-2"
-                onClick={() => goToSchedule()}
-              >
-                Schedule
-              </button>
+            
             </div>
           ))
         ) : (

@@ -1,3 +1,4 @@
+// beefbuddies/frontend/src/App.js
 import "./App.css";
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import Navbar from "./layout/Navbar";
@@ -12,7 +13,6 @@ import LoginUser from "./users/LoginUser";
 import ViewFriends from "./users/ViewFriends";
 import MessageFriend from "./users/MessageFriend";
 import FindFriends from "./users/FindFriends";
-//import Schedule from "./users/Schedule";
 function App() {
   return (
     <div className="App">

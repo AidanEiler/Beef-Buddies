@@ -1,13 +1,7 @@
-import axios from "axios";
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
-/**
-
-This component renders a sign-up form for users to create a new account. The form includes input fields for the user's first name, last name, username, email, and password. When the user submits the form, an HTTP POST request is sent to the server with the user's information to create a new user. If the request is successful, the user is navigated to the home page. If the user cancels the form, they are navigated back to the home page.
-*/
-
-
+import axios from "axios";
+import { AuthContext } from "../AuthContext";
 
 export default function AddUser() {
   let navigate = useNavigate();
@@ -20,16 +14,32 @@ export default function AddUser() {
     password: "",
   });
 
-  const { first_name,last_name, username, email, password } = user;
+  const { first_name, last_name, username, email, password } = user;
 
   const onInputChange = (e) => {
     setUser({ ...user, [e.target.name]: e.target.value });
   };
 
+  const { setIsLoggedIn, setUserId } = useContext(AuthContext);
+
   const onSubmit = async (e) => {
     e.preventDefault();
     await axios.post("http://localhost:8080/user", user);
-    navigate("/Home");
+    try {
+      const response = await axios.post("http://localhost:8080/user/authenticate", {
+        username: user.username,
+        password: user.password,
+      });
+
+      if (response.status === 200) {
+        const { id } = response.data;
+        setIsLoggedIn(true);
+        setUserId(id);
+        navigate(`/viewuser/${id}`);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
