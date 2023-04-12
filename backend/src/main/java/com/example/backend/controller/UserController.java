@@ -31,6 +31,23 @@ public class UserController {
     @Autowired
     private Map<MatchingType, MatchingStrategy> matchingStrategies;
 
+    // Singleton instance variable
+    private static UserController instance;
+
+    // Private constructor to prevent instantiation of UserController
+    private UserController() {}
+
+    /**
+     * Returns the Singleton instance of the UserController class.
+     * @return the Singleton instance of the UserController class
+     */
+    public static UserController getInstance() {
+        if (instance == null) {
+            instance = new UserController();
+        }
+        return instance;
+    }
+
     /**
      * Creates a new user and saves it to the UserRepository.
      * If the user's bench value is null, sets it to 0.
@@ -116,4 +133,6 @@ public class UserController {
 
         return userRepository.findAllBasicInfoExcept(excludeUserId, friendIds);
     }
+
+
 }
