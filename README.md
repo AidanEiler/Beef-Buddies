@@ -12,4 +12,4 @@ This is a social media site I've made with a team for a capstone project.
 | Christian Allison | Web Developer, Wireframe Designer                    |
 
 > [!NOTE]  
-> For more info on the project, look at [our project portfolio!](https://github.com/AidanEiler/Beef-Buddiesblob/main/TeamTigahsProjectPortfolio.pdf)
+> For more info on the project, look at [our project portfolio!](https://github.com/AidanEiler/Beef-Buddies/blob/recent/TeamTigahsProjectPortfolio.pdf)
